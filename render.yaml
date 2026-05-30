@@ -1,5 +1,5 @@
 services:
-  # ── Backend Configuration ───────────────────────────────────────────────────
+  # ── Backend (Docker Web Service Container) ──────────────────────────────────
   - type: web
     name: petstore-backend
     env: docker
@@ -14,13 +14,11 @@ services:
           name: petstore-frontend
           property: url
 
-  # ── Frontend Configuration ──────────────────────────────────────────────────
-  - type: web
+  # ── Frontend (Pure Static Site Deployment) ──────────────────────────────────
+  - type: static
     name: petstore-frontend
-    runtime: static
-    rootDir: frontend
     buildCommand: "npm install && npm run build"
-    publishDir: dist
+    staticPublishDir: dist
     routes:
       - type: rewrite
         source: /*
