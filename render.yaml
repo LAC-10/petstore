@@ -10,14 +10,13 @@ services:
         value: "8080"
       - key: CORS_ALLOWED_ORIGINS
         fromService:
-          type: web
+          type: static_site
           name: petstore-frontend
           property: url
 
-  # ── Frontend (Static Site) ───────────────────────────────────────────────────
-  - type: web
+  # ── Frontend (Static Site Service) ───────────────────────────────────────────
+  - type: static_site
     name: petstore-frontend
-    runtime: static
     rootDir: frontend
     buildCommand: npm install && npm run build
     publishDir: dist
