@@ -1,5 +1,4 @@
 services:
-  # ── Backend (Docker Web Service Container) ──────────────────────────────────
   - type: web
     name: petstore-backend
     env: docker
@@ -10,15 +9,15 @@ services:
         value: "8080"
       - key: CORS_ALLOWED_ORIGINS
         fromService:
-          type: web
+          type: static_site
           name: petstore-frontend
           property: url
 
-  # ── Frontend (Pure Static Site Deployment) ──────────────────────────────────
-  - type: static
+  - type: static_site
     name: petstore-frontend
+    rootDir: frontend
     buildCommand: "npm install && npm run build"
-    staticPublishDir: dist
+    publishDir: dist
     routes:
       - type: rewrite
         source: /*
