@@ -1,5 +1,5 @@
 services:
-  # ── Backend (Docker Web Service) ─────────────────────────────────────────────
+  # ── Backend Configuration ───────────────────────────────────────────────────
   - type: web
     name: petstore-backend
     env: docker
@@ -14,7 +14,7 @@ services:
           name: petstore-frontend
           property: url
 
-  # ── Frontend (Static Web Service) ────────────────────────────────────────────
+  # ── Frontend Configuration ──────────────────────────────────────────────────
   - type: web
     name: petstore-frontend
     runtime: static
