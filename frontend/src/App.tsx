@@ -1,7 +1,19 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Container, Typography, TextField, MenuItem, Grid, Card, CardMedia, CardContent, Chip, CardActions, Button, Stack, CircularProgress } from '@mui/material';
-import { Pet } from './types';
 import { fetchPets, deletePet } from './api/petApi';
+
+// Re-add your clean local model interface
+export interface Pet {
+  id: number;
+  name: string;
+  species: string;
+  breed: string;
+  price: number;
+  age: number;
+  description: string;
+  imageUrl: string;
+  available: boolean;
+}
 
 const speciesOptions = ['All', 'Dog', 'Cat', 'Rabbit', 'Fish'];
 
@@ -14,45 +26,52 @@ function App() {
   useEffect(() => {
     setLoading(true);
     fetchPets()
-      .then(setPets)
+      .then((data) => {
+        setPets(data as Pet[]);
+      })
+      .catch((error) => console.error("Error loading pets:", error))
       .finally(() => setLoading(false));
   }, []);
 
   const filteredPets = useMemo(() => {
     return pets.filter((pet) => {
       const matchesSpecies = species === 'All' || pet.species === species;
-      const matchesSearch = pet.name.toLowerCase().includes(search.toLowerCase()) || pet.breed.toLowerCase().includes(search.toLowerCase());
+      const matchesSearch = 
+        (pet.name?.toLowerCase() || '').includes(search.toLowerCase()) || 
+        (pet.breed?.toLowerCase() || '').includes(search.toLowerCase());
       return matchesSpecies && matchesSearch;
     });
   }, [pets, search, species]);
 
   const handleDelete = async (id: number) => {
-    await deletePet(id);
-    setPets((current) => current.filter((pet) => pet.id !== id));
+    try {
+      await deletePet(id);
+      setPets((current) => current.filter((pet) => pet.id !== id));
+    } catch (error) {
+      console.error("Error removing pet:", error);
+    }
   };
 
   return (
-    <Container maxWidth="lg" sx={{ py: 4 }}>
-      <Typography variant="h3" component="h1" gutterBottom>
+    <Container sx={{ py: 4 }}>
+      <Typography variant="h3" component="h1" gutterBottom align="center" fontWeight="bold" color="primary">
         Petstore
       </Typography>
-      <Typography variant="subtitle1" color="text.secondary" paragraph>
-        Browse adoptable pets and find the perfect companion for your home.
-      </Typography>
-
-      <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} sx={{ mb: 4 }}>
+      
+      <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} mb={4}>
         <TextField
-          label="Search pets"
-          value={search}
-          onChange={(event) => setSearch(event.target.value)}
           fullWidth
+          label="Search pets by name or breed"
+          variant="outlined"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
         />
         <TextField
           select
-          label="Filter by species"
+          label="Species"
           value={species}
-          onChange={(event) => setSpecies(event.target.value)}
-          sx={{ width: { xs: '100%', sm: 220 } }}
+          onChange={(e) => setSpecies(e.target.value)}
+          sx={{ minWidth: 150 }}
         >
           {speciesOptions.map((option) => (
             <MenuItem key={option} value={option}>
@@ -63,15 +82,20 @@ function App() {
       </Stack>
 
       {loading ? (
-        <Stack alignItems="center" sx={{ py: 8 }}>
+        <Stack alignItems="center" my={4}>
           <CircularProgress />
         </Stack>
       ) : (
         <Grid container spacing={3}>
           {filteredPets.map((pet) => (
-            <Grid item xs={12} sm={6} md={4} key={pet.id}>
+            <Grid item key={pet.id} xs={12} sm={6} md={4}>
               <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-                <CardMedia component="img" height="220" image={pet.imageUrl} alt={pet.name} />
+                <CardMedia
+                  component="img"
+                  height="200"
+                  image={pet.imageUrl || 'https://images.unsplash.com/photo-1543466835-00a7907e9de1'}
+                  alt={pet.name}
+                />
                 <CardContent sx={{ flexGrow: 1 }}>
                   <Stack direction="row" spacing={1} mb={1} flexWrap="wrap">
                     <Chip label={pet.species} color="primary" size="small" />
@@ -84,7 +108,7 @@ function App() {
                     {pet.description}
                   </Typography>
                   <Typography variant="subtitle1" sx={{ mt: 2 }}>
-                    ${pet.price.toFixed(2)} · {pet.age} year{pet.age === 1 ? '' : 's'} old
+                    ${typeof pet.price === 'number' ? pet.price.toFixed(2) : '0.00'} · {pet.age} year{pet.age === 1 ? '' : 's'} old
                   </Typography>
                 </CardContent>
                 <CardActions>
